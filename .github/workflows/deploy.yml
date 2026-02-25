@@ -2,17 +2,23 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]  # Runs whenever you push to main
+    branches: [ main ]
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # This is the GitHub-hosted runner
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Simple Test
-        run: echo "Connecting to EC2 at ${{ secrets.EC2_PUBLIC_IP }}"
-
-      # Add your deployment commands here (e.g., SSH and restart docker)
+      # THIS IS THE STEP YOU ARE LOOKING FOR:
+      - name: Login and Run Commands on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Successfully logged into EC2!"
+            sudo apt update
+            docker ps
