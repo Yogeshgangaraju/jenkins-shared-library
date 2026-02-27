@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Self-Hosted Deployment
 
 on:
   push:
@@ -6,19 +6,13 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Tells GitHub to look for your EC2 runner
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # THIS IS THE STEP YOU ARE LOOKING FOR:
-      - name: Login and Run Commands on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            echo "Successfully logged into EC2!"
-            sudo apt update
-            docker ps
+      - name: Run Deployment Script
+        run: |
+          # This runs DIRECTLY on your EC2 terminal
+          sudo docker run -d -p 80:80 --name self-hosted-web nginx || sudo docker start self-hosted-web
